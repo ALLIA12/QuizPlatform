@@ -1,0 +1,37 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+<h1>User Profile</h1>
+<p>Welcome, {{ user.username }}!</p>
+{% if messages %}
+<ul class="messages">
+    {% for message in messages %}
+    <li
+            {% if message.tags %} class="{{ message.tags }}" {% endif %}>{{ message }}
+    </li>
+    {% endfor %}
+</ul>
+{% endif %}
+
+<form method="post" action="{% url 'update_profile' %}">
+    {% csrf_token %}
+    {% csrf_token %}
+    <div>
+        <label for="id_first_name">First name:</label>
+        {{ user_form.first_name }}
+    </div>
+    <div>
+        <label for="id_last_name">Last name:</label>
+        {{ user_form.last_name }}
+    </div>
+    <div>
+        <label for="id_email">Email:</label>
+        {{ user_form.email }}
+    </div>
+    <div>
+        <label for="id_identification_number">Identification number:</label>
+        {{ user_form.identification_number }}
+    </div>
+    <button type="submit" name="update_info">Update Information</button>
+</form>
+{% endblock %}

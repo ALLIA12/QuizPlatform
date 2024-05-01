@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+{% load static %}
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}My Site{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+<header>
+    <h1>My Website</h1>
+    <nav>
+        <ul>
+            <li><a href="{% url 'home' %}">Home</a></li>
+            {% if user.is_authenticated %}
+            <li><a href="{% url 'update_profile' %}">Profile</a></li>
+            <li>
+                <!--Couldn't find any other way to include a form button here, sooo i guess this works yay-->
+                <form id="logout-form" action="{% url 'logout' %}" method="post" style="display: none;">
+                    {% csrf_token %}
+                </form>
+                <a href="#" onclick="document.getElementById('logout-form').submit(); return false;">Logout</a>
+
+            </li>
+            {% else %}
+            <li><a href="{% url 'login' %}">Login</a></li>
+            <li><a href="{% url 'register' %}">Register</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+</header>
+
+<div id="content">
+    {% block content %}{% endblock %}
+</div>
+
+<footer>
+    <p>© 2024 Ali. All rights reserved.</p>
+</footer>
+</body>
+</html>
