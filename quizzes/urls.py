@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import home, register, update_profile
+from .views import home, register, update_profile, apply_for_courses
 from quizzes.forms import CustomAuthenticationForm
 from django.contrib.auth import views as auth_views
 from django.contrib.auth.views import LogoutView
@@ -14,4 +14,5 @@ urlpatterns = [
     ), name='login'),
     path('profile/', update_profile, name='update_profile'),
     path('logout/', LogoutView.as_view(next_page=home), name='logout'),
+    path('apply/', apply_for_courses, name='apply_for_courses'),
 ]

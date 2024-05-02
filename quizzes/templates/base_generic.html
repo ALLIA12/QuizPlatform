@@ -15,18 +15,19 @@
         <ul>
             <li><a href="{% url 'home' %}">Home</a></li>
             {% if user.is_authenticated %}
-            <li><a href="{% url 'update_profile' %}">Profile</a></li>
-            <li>
-                <!--Couldn't find any other way to include a form button here, sooo i guess this works yay-->
-                <form id="logout-form" action="{% url 'logout' %}" method="post" style="display: none;">
-                    {% csrf_token %}
-                </form>
-                <a href="#" onclick="document.getElementById('logout-form').submit(); return false;">Logout</a>
+                <li><a href="{% url 'apply_for_courses' %}">Apply</a></li>
 
-            </li>
+                <li><a href="{% url 'update_profile' %}">Profile</a></li>
+                <li>
+                    <!--Couldn't find any other way to include a form button here, sooo i guess this works yay-->
+                    <form id="logout-form" action="{% url 'logout' %}" method="post" style="display: none;">
+                        {% csrf_token %}
+                    </form>
+                    <a href="#" onclick="document.getElementById('logout-form').submit(); return false;">Logout</a>
+                </li>
             {% else %}
-            <li><a href="{% url 'login' %}">Login</a></li>
-            <li><a href="{% url 'register' %}">Register</a></li>
+                <li><a href="{% url 'login' %}">Login</a></li>
+                <li><a href="{% url 'register' %}">Register</a></li>
             {% endif %}
         </ul>
     </nav>

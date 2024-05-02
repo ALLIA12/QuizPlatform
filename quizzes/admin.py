@@ -35,7 +35,8 @@ class FileUploadQuestionInline(admin.StackedInline):
 @admin.register(Course)
 class CourseAdmin(admin.ModelAdmin):
     list_display = ['title', 'description']
-    #inlines = [MultipleChoiceQuestionInline, FileUploadQuestionInline]
+    filter_horizontal = ('applicants', 'participants',)  # This enables the two-box interface
+
 
 
 class MultipleChoiceQuestionAdmin(admin.ModelAdmin):

@@ -3,6 +3,7 @@ from django.contrib.auth.forms import UserCreationForm
 from .models import CustomUser
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.forms import UserChangeForm
+from .models import Course
 
 
 class CustomUserCreationForm(UserCreationForm):
@@ -42,3 +43,20 @@ class CustomUserChangeForm(UserChangeForm):
     class Meta:
         model = CustomUser
         fields = ('first_name', 'last_name', 'email', 'identification_number')
+
+
+class CourseApplicationForm(forms.Form):
+    courses = forms.ModelMultipleChoiceField(
+        queryset=Course.objects.all(),
+        widget=forms.CheckboxSelectMultiple,
+        required=True,
+        help_text="Select the courses you wish to apply for."
+    )
+
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+        if user:
+            # Filter out courses that the user has already applied to or is already a participant in
+            self.fields['courses'].queryset = Course.objects.exclude(
+                applicants=user).exclude(participants=user)
