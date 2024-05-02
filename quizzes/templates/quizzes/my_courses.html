@@ -1,0 +1,30 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+    <h2>My Courses</h2>
+    {% if courses %}
+        <ul>
+            {% for course in courses %}
+                <li>
+                    <h3>{{ course.title }}</h3>
+                    <p>{{ course.description }}</p>
+                    <strong>Quizzes:</strong>
+                    {% if course.quizzes.all %}
+                        <ul>
+                            {% for quiz in course.quizzes.all %}
+                                <li>
+                                    {{ quiz.title }}
+                                    <a href="{% url 'start_quiz' quiz.id %}">Start Quiz</a>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p>No quizzes available.</p>
+                    {% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>You are not enrolled in any courses.</p>
+    {% endif %}
+{% endblock %}

@@ -1,9 +1,9 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
-from .models import CustomUser
+from .models import CustomUser, MultipleChoiceQuestion, Quiz
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.forms import UserChangeForm
-from .models import Course
+from .models import Course, Submission
 
 
 class CustomUserCreationForm(UserCreationForm):
@@ -60,3 +60,40 @@ class CourseApplicationForm(forms.Form):
             # Filter out courses that the user has already applied to or is already a participant in
             self.fields['courses'].queryset = Course.objects.exclude(
                 applicants=user).exclude(participants=user)
+
+
+class QuizForm(forms.ModelForm):
+    class Meta:
+        model = Submission
+        fields = []
+
+    def __init__(self, *args, **kwargs):
+        self.quiz = kwargs.pop('quiz')
+        self.user = kwargs.pop('user')
+        super().__init__(*args, **kwargs)
+        # Setup quiz questions and answer choices as form fields
+
+    def save(self, *args, **kwargs):
+        submission = super().save(commit=False)
+        submission.quiz = self.quiz
+        submission.user = self.user
+        submission.save()
+        # Handle saving each answer and calculating the score
+        submission.calculate_score()
+        return submission
+
+
+class QuizAdminForm(forms.ModelForm):
+    class Meta:
+        model = Quiz
+        fields = '__all__'
+
+    def __init__(self, *args, **kwargs):
+        super(QuizAdminForm, self).__init__(*args, **kwargs)
+        if self.instance.pk:
+            self.fields['mc_questions'].queryset = MultipleChoiceQuestion.objects.filter(course=self.instance.course)
+        elif 'initial' in kwargs and 'course' in kwargs['initial']:
+            self.fields['mc_questions'].queryset = MultipleChoiceQuestion.objects.filter(
+                course=kwargs['initial']['course'])
+        else:
+            self.fields['mc_questions'].queryset = MultipleChoiceQuestion.objects.none()

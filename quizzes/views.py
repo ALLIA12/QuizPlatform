@@ -1,9 +1,12 @@
 from django.shortcuts import render, redirect
-from .forms import CustomUserCreationForm
+from .forms import CustomUserCreationForm, QuizForm
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required
 from .forms import CustomUserChangeForm
 from .forms import CourseApplicationForm
+from .models import Course, Submission, Quiz
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+
 
 
 # Create your views here.
@@ -37,7 +40,6 @@ def update_profile(request):
     return render(request, 'accounts/profile.html', {'user_form': form})
 
 
-
 @login_required
 def apply_for_courses(request):
     if request.method == 'POST':
@@ -53,3 +55,30 @@ def apply_for_courses(request):
         form = CourseApplicationForm(user=request.user)
 
     return render(request, 'quizzes/apply_for_courses.html', {'form': form})
+
+
+@login_required
+def my_courses(request):
+    # Fetch all courses where the current user is a participant
+    courses = Course.objects.filter(participants=request.user)
+    return render(request, 'quizzes/my_courses.html', {'courses': courses})
+
+
+@login_required
+def take_quiz(request, quiz_id):
+    quiz = get_object_or_404(Quiz, pk=quiz_id)
+    if request.method == 'POST':
+        form = QuizForm(request.POST, quiz=quiz, user=request.user)
+        if form.is_valid():
+            submission = form.save()
+            return redirect('view_results', submission_id=submission.id)
+    else:
+        form = QuizForm(quiz=quiz, user=request.user)
+
+    return render(request, 'quizzes/take_quiz.html', {'form': form, 'quiz': quiz})
+
+
+@login_required
+def view_results(request, submission_id):
+    submission = get_object_or_404(Submission, pk=submission_id, user=request.user)
+    return render(request, 'quizzes/results.html', {'submission': submission})

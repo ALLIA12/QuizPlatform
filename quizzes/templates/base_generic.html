@@ -16,7 +16,7 @@
             <li><a href="{% url 'home' %}">Home</a></li>
             {% if user.is_authenticated %}
                 <li><a href="{% url 'apply_for_courses' %}">Apply</a></li>
-
+                <li><a href="{% url 'my_courses' %}">My Courses</a></li>
                 <li><a href="{% url 'update_profile' %}">Profile</a></li>
                 <li>
                     <!--Couldn't find any other way to include a form button here, sooo i guess this works yay-->

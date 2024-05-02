@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import home, register, update_profile, apply_for_courses
+from .views import home, register, update_profile, apply_for_courses, my_courses, get_mcqs_for_course
 from quizzes.forms import CustomAuthenticationForm
 from django.contrib.auth import views as auth_views
 from django.contrib.auth.views import LogoutView
@@ -15,4 +15,5 @@ urlpatterns = [
     path('profile/', update_profile, name='update_profile'),
     path('logout/', LogoutView.as_view(next_page=home), name='logout'),
     path('apply/', apply_for_courses, name='apply_for_courses'),
+    path('my-courses/', my_courses, name='my_courses'),
 ]

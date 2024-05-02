@@ -22,24 +22,15 @@ class Course(models.Model):
         return self.title
 
 
-class Question(models.Model):
-    course = models.ForeignKey(Course, related_name='questions', on_delete=models.CASCADE)
+class MultipleChoiceQuestion(models.Model):
+    course = models.ForeignKey(Course, related_name='mc_questions', on_delete=models.CASCADE)
     text = models.TextField()
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        abstract = True
-
-    def __str__(self):
-        return self.text
-
-
-class MultipleChoiceQuestion(Question):
     choice_type = models.CharField(max_length=8,
                                    choices=[('single', 'Single Answer'), ('multiple', 'Multiple Answers')],
                                    default='single')
-    # Ensuring related_name is unique for this subclass
-    course = models.ForeignKey(Course, related_name='mc_questions', on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.text
 
 
 class Choice(models.Model):
@@ -51,6 +42,35 @@ class Choice(models.Model):
         return self.text
 
 
-class FileUploadQuestion(Question):
-    # Ensuring related_name is unique for this subclass
-    course = models.ForeignKey(Course, related_name='file_upload_questions', on_delete=models.CASCADE)
+class Quiz(models.Model):
+    course = models.ForeignKey(Course, related_name='quizzes', on_delete=models.CASCADE)
+    title = models.CharField(max_length=255)
+    description = models.TextField()
+    mc_questions = models.ManyToManyField('MultipleChoiceQuestion', related_name='quizzes', blank=True)
+
+    def __str__(self):
+        return self.title
+
+
+class Submission(models.Model):
+    user = models.ForeignKey(CustomUser, related_name='submissions', on_delete=models.CASCADE)
+    quiz = models.ForeignKey(Quiz, related_name='submissions', on_delete=models.CASCADE)
+    score = models.FloatField(default=0.0)
+
+    def calculate_score(self):
+        total_questions = self.answers.count()
+        correct_answers = self.answers.filter(choice__is_correct=True).count()
+        self.score = (correct_answers / total_questions) * 100 if total_questions > 0 else 0
+        self.save()
+
+    def __str__(self):
+        return f"{self.user.username} - {self.quiz.title} - Score: {self.score}"
+
+
+class UserAnswer(models.Model):
+    submission = models.ForeignKey(Submission, related_name='answers', on_delete=models.CASCADE)
+    question = models.ForeignKey(MultipleChoiceQuestion, on_delete=models.CASCADE)
+    choice = models.ForeignKey(Choice, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"{self.submission.user.username} - {self.question.text} - Chose: {self.choice.text}"

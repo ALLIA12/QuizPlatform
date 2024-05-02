@@ -1,6 +1,8 @@
 from django.contrib import admin
-from .models import CustomUser
-from .models import Course, MultipleChoiceQuestion, Choice, FileUploadQuestion
+
+from .forms import QuizAdminForm
+from .models import CustomUser, Quiz
+from .models import Course, MultipleChoiceQuestion, Choice
 
 
 class CustomUserAdmin(admin.ModelAdmin):
@@ -27,25 +29,28 @@ class MultipleChoiceQuestionInline(admin.StackedInline):
     inlines = [ChoiceInline]
 
 
-class FileUploadQuestionInline(admin.StackedInline):
-    model = FileUploadQuestion
-    extra = 1
-
-
 @admin.register(Course)
 class CourseAdmin(admin.ModelAdmin):
     list_display = ['title', 'description']
     filter_horizontal = ('applicants', 'participants',)  # This enables the two-box interface
 
 
-
 class MultipleChoiceQuestionAdmin(admin.ModelAdmin):
     list_display = ('text', 'course', 'choice_type')
     inlines = [ChoiceInline]
 
+
 class FileUploadQuestionAdmin(admin.ModelAdmin):
     list_display = ('text', 'course')
 
+
 # Re-register these if needed
 admin.site.register(MultipleChoiceQuestion, MultipleChoiceQuestionAdmin)
-admin.site.register(FileUploadQuestion, FileUploadQuestionAdmin)
+
+
+@admin.register(Quiz)
+class QuizAdmin(admin.ModelAdmin):
+    form = QuizAdminForm
+    list_display = ('title', 'course')
+    list_filter = ('course',)
+    filter_horizontal = ('mc_questions',)  # This should now work correctly
