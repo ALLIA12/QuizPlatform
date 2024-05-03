@@ -1,0 +1,16 @@
+{% extends "base_generic.html" %}
+{% load static %}
+
+{% block content %}
+    <h1>{{ quiz.title }}</h1>
+    <form method="post" id="quiz-form">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Submit Quiz</button>
+    </form>
+    <!-- Define the quiz ID here for access in external scripts -->
+    <script>
+        var quizId = {{ quiz.id }};
+    </script>
+    <script src="{% static 'js/quiz_script.js' %}" defer></script>
+{% endblock %}

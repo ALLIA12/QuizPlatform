@@ -1,0 +1,25 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+    <h1>Quiz Results</h1>
+    <p>Quiz: {{ submission.quiz.title }}</p>
+    <p>Participant: {{ submission.user.username }}</p>
+
+    <ul>
+        {% for detail in questions_details %}
+            <li>
+                <h3>{{ detail.question }}</h3>
+                <p>Your Answer: <strong>{{ detail.selected_answer }}</strong> {% if detail.is_correct %}
+                    (Correct) {% else %} (Incorrect) {% endif %}</p>
+                <p>All Options:</p>
+                <ul>
+                    {% for choice in detail.all_choices %}
+                        <li>{{ choice }}</li>
+                    {% endfor %}
+                </ul>
+            </li>
+        {% endfor %}
+    </ul>
+
+    <p>Score: {{ submission.score }}%</p>
+{% endblock %}

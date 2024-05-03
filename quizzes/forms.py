@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
-from .models import CustomUser, MultipleChoiceQuestion, Quiz
+from .models import CustomUser, MultipleChoiceQuestion, Quiz, UserAnswer
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.forms import UserChangeForm
 from .models import Course, Submission
@@ -62,27 +62,6 @@ class CourseApplicationForm(forms.Form):
                 applicants=user).exclude(participants=user)
 
 
-class QuizForm(forms.ModelForm):
-    class Meta:
-        model = Submission
-        fields = []
-
-    def __init__(self, *args, **kwargs):
-        self.quiz = kwargs.pop('quiz')
-        self.user = kwargs.pop('user')
-        super().__init__(*args, **kwargs)
-        # Setup quiz questions and answer choices as form fields
-
-    def save(self, *args, **kwargs):
-        submission = super().save(commit=False)
-        submission.quiz = self.quiz
-        submission.user = self.user
-        submission.save()
-        # Handle saving each answer and calculating the score
-        submission.calculate_score()
-        return submission
-
-
 class QuizAdminForm(forms.ModelForm):
     class Meta:
         model = Quiz
@@ -97,3 +76,47 @@ class QuizAdminForm(forms.ModelForm):
                 course=kwargs['initial']['course'])
         else:
             self.fields['mc_questions'].queryset = MultipleChoiceQuestion.objects.none()
+
+
+class QuizForm(forms.ModelForm):
+    class Meta:
+        model = Submission
+        fields = []
+
+    def __init__(self, *args, **kwargs):
+        self.quiz = kwargs.pop('quiz')
+        self.user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+        if self.quiz:
+            questions = MultipleChoiceQuestion.objects.filter(course=self.quiz.course)
+            for question in questions:
+                field_name = f'question_{question.id}'
+                if question.choice_type == 'single':
+                    self.fields[field_name] = forms.ModelChoiceField(
+                        queryset=question.choices.all(),
+                        widget=forms.RadioSelect(attrs={'class': 'ajax-save', 'data-question-id': question.id}),
+                        label=question.text,
+                        empty_label=None
+                    )
+                elif question.choice_type == 'multiple':
+                    self.fields[field_name] = forms.ModelMultipleChoiceField(
+                        queryset=question.choices.all(),
+                        widget=forms.CheckboxSelectMultiple(attrs={'class': 'ajax-save', 'data-question-id': question.id}),
+                        label=question.text
+                    )
+
+    def save(self, *args, **kwargs):
+        submission = super().save(commit=False)
+        submission.quiz = self.quiz
+        submission.user = self.user
+        submission.save()
+        for field_name, value in self.cleaned_data.items():
+            if field_name.startswith('question_'):
+                question_id = int(field_name.split('_')[1])
+                UserAnswer.objects.create(
+                    submission=submission,
+                    question=MultipleChoiceQuestion.objects.get(id=question_id),
+                    choice=value
+                )
+        submission.calculate_score()
+        return submission
